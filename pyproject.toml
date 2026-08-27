@@ -9,6 +9,7 @@ requires-python = ">=3.12,<3.13"
 dependencies = [
     "django (>=6.1,<7.0)",
     "uvicorn (>=0.52.4,<0.53.0)",
+    "django-ninja (>=1.6.3,<2.0.0)",
 ]
 
 
