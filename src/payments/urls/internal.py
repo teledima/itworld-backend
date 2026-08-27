@@ -4,5 +4,5 @@ from payments.views import internal
 
 
 urlpatterns = [
-    path('/payments', internal.payments),
+    path('payments', internal.payments),
 ]

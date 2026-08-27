@@ -17,7 +17,7 @@ Including another URLconf
 from django.urls import path, include
 
 urlpatterns = [
-    path('api/v1/invoices', include('payments.urls.invoices')),
-    path('api/v1/merchants', include('payments.urls.merchants')),
-    path('internal', include('payments.urls.internal')),
+    path('api/v1/invoices/', include('payments.urls.invoices')),
+    path('api/v1/merchants/', include('payments.urls.merchants')),
+    path('internal/', include('payments.urls.internal')),
 ]
