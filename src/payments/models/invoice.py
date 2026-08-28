@@ -9,7 +9,7 @@ class Invoice(models.Model):
     currency = models.CharField(max_length=3)
     status = models.CharField(choices=InvoiceStatus)
     project = models.ForeignKey(Project, on_delete=models.RESTRICT)
-    idempotency_key = models.CharField()
+    idempotency_key = models.UUIDField()
 
     created_at = models.DateTimeField(auto_now_add=True)
     expired_at = models.DateTimeField()
