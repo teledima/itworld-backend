@@ -15,7 +15,7 @@ class AuthTokenMiddleware:
             if not api_key or len(p) == 0:
                 raise PermissionDenied
 
-            request.project = p.get()
+            request.auth = p.get()
 
         response = self.get_response(request)
 

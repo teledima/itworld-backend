@@ -1,10 +1,34 @@
 from django.db import models
+from loguru import logger
 from payments.models.project import Project
 
 
-class Invoice(models.Model):
-    InvoiceStatus = models.TextChoices("InvoiceStatus", "NEW PENDING PAID UNDERPAID OVERPAID EXPIRED CANCELLED")
+class ForbiddenTransition(Exception):
+    pass
 
+
+class InvoiceStatus(models.TextChoices):
+    NEW = 'NEW'
+    PENDING = 'PENDING'
+    PAID = 'PAID'
+    UNDERPAID = 'UNDERPAID'
+    OVERPAID = 'OVERPAID'
+    EXPIRED = 'EXPIRED'
+    CANCELLED = 'CANCELLED'
+
+
+fsm = {
+    InvoiceStatus.NEW: frozenset([InvoiceStatus.PENDING, InvoiceStatus.PAID, InvoiceStatus.UNDERPAID, InvoiceStatus.OVERPAID, InvoiceStatus.EXPIRED, InvoiceStatus.CANCELLED]),
+    InvoiceStatus.PENDING: frozenset([InvoiceStatus.PAID, InvoiceStatus.UNDERPAID, InvoiceStatus.OVERPAID, InvoiceStatus.EXPIRED, InvoiceStatus.CANCELLED]),
+    InvoiceStatus.PAID: frozenset(),
+    InvoiceStatus.UNDERPAID: frozenset([InvoiceStatus.PAID, InvoiceStatus.OVERPAID, InvoiceStatus.EXPIRED, InvoiceStatus.CANCELLED]),
+    InvoiceStatus.OVERPAID: frozenset(),
+    InvoiceStatus.EXPIRED: frozenset(),
+    InvoiceStatus.CANCELLED: frozenset(),
+}
+
+
+class Invoice(models.Model):
     amount = models.DecimalField(max_digits=16, decimal_places=4)
     currency = models.CharField(max_length=3)
     status = models.CharField(choices=InvoiceStatus)
@@ -27,3 +51,15 @@ class Invoice(models.Model):
                 name='invoice_project_idempotency_key_key',
             )
         ]
+
+    def set_status(self, target: InvoiceStatus) -> None:
+        if target not in fsm[self.status]:
+            logger.bind(
+                invoice_id=self.pk,
+                status=self.status,
+                target_status=target,
+            ).error("Attempt to make broken transition")
+
+            raise ForbiddenTransition
+
+        self.status = target
