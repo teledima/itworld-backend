@@ -22,9 +22,6 @@ def payments(request: HttpRequest, payment: Payment):
             ).model_dump(),
         )
 
-    try:
-        process_payment(payment)
-    except:
-        return HttpResponse(status=500)
+    process_payment(payment)
     
     return HttpResponse(status=204)

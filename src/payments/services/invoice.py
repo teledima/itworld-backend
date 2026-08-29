@@ -5,9 +5,10 @@ from payments.schemas.invoice import CreateInvoice
 from payments.models.invoice import Invoice, InvoiceStatus
 from payments.models.project import Project
 from payments.models.ledger import Ledger
+from payments.models.payment import Payment
 
 
-def create_invoice(project: Project, invoice: CreateInvoice):
+def create_invoice(project: Project, invoice: CreateInvoice) -> Invoice:
     invoices = Invoice.objects.filter(project_id=project.pk, idempotency_key=invoice.idempotency_key)
 
     if len(invoices) == 0:
@@ -25,7 +26,14 @@ def create_invoice(project: Project, invoice: CreateInvoice):
     return invoices.get()
 
 
-def remain_amount(invoice: Invoice) -> Decimal:
+def get_invoice_info(project: Project, id: int) -> tuple[Invoice, list[Ledger]]:
+    invoice = Invoice.objects.get(pk=id, project_id=project.pk)
+    ledgers = invoice.ledger_set.order_by('-dt').filter(payment__isnull=False, type=Ledger.LedgerType.FUND).all()
+
+    return invoice, ledgers
+
+
+def paied_amount(invoice: Invoice) -> Decimal:
     return Decimal(
         Ledger.objects
             .filter(invoice_id=invoice.pk, type=Ledger.LedgerType.FUND)

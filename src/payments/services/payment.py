@@ -7,7 +7,7 @@ from payments.models.payment import Payment
 from payments.models.invoice import Invoice, InvoiceStatus
 from payments.models.ledger import Ledger
 from payments.models.exchange_rate import ExchangeRate
-from payments.services.invoice import remain_amount
+from payments.services.invoice import paied_amount
 from payments.services.currency import exchange
 
 
@@ -28,10 +28,10 @@ def process_payment(payment: PaymentSchema):
         # TODO: реализовать возврат средств
         return
 
-    remain = remain_amount(invoice)
+    paied = paied_amount(invoice)
     exchanged_amount, rate = payment.amount, Decimal(1)
 
-    if remain < invoice.amount:
+    if paied < invoice.amount:
         new_payment = Payment(
             amount=payment.amount,
             currency=payment.currency,
@@ -52,7 +52,7 @@ def process_payment(payment: PaymentSchema):
         new_payment.save()
         fund_ledger.save()
 
-    amount_after_payment = remain_amount(invoice)
+    amount_after_payment = paied_amount(invoice)
     if amount_after_payment >= invoice.amount:
         if amount_after_payment > invoice.amount:
             invoice.set_status(InvoiceStatus.OVERPAID)
@@ -68,9 +68,10 @@ def process_payment(payment: PaymentSchema):
             type=Ledger.LedgerType.FEE,
         )
         fee_ledger.save()
-        invoice.save()
     else:
         invoice.set_status(InvoiceStatus.UNDERPAID)
+
+    invoice.save()
 
 
 def _exchange(payment: PaymentSchema, invoice: Invoice) -> tuple[Decimal, Decimal]:
