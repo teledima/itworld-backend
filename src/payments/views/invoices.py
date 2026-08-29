@@ -1,28 +1,30 @@
 from django.views.decorators.http import require_POST, require_GET
 from django.http.response import JsonResponse, HttpResponse
 from payments.decorators import validate_body
-from payments.services.invoice import create_invoice, get_invoice_info, paied_amount
-from payments.schemas.invoice import CreateInvoice, Invoice, InvoiceDetailed, InvoicePayment
+from payments.services import invoice as invoice_svc
+from payments.schemas.invoice import CreateInvoice, Invoice as InvoiceSchema, InvoiceDetailed, InvoicePayment
+from payments.models.invoice import Invoice, ForbiddenTransition
+from payments.errors import HttpError
 
 
 @require_POST
 @validate_body(CreateInvoice, 'invoice')
 def create(request, invoice: CreateInvoice):
-    invoice = create_invoice(request.auth, invoice)
+    invoice = invoice_svc.create_invoice(request.auth, invoice)
 
     return JsonResponse(
-        Invoice.model_validate(invoice, from_attributes=True).model_dump(),
+        InvoiceSchema.model_validate(invoice, from_attributes=True).model_dump(),
     )
 
 
 @require_GET
 def get_by_id(request, id: int):
-    invoice, ledgers = get_invoice_info(request.auth, id)
+    invoice, ledgers = invoice_svc.get_invoice_info(request.auth, id)
 
     detailed = InvoiceDetailed(
         id=invoice.id,
         amount=invoice.amount,
-        paied=paied_amount(invoice),
+        paied=invoice_svc.paied_amount(invoice),
         currency=invoice.currency,
         status=invoice.status,
         payments=[
@@ -45,4 +47,18 @@ def get_by_id(request, id: int):
 
 @require_POST
 def cancel(request, id: int):
+    try:
+        invoice_svc.cancel(request.auth, id)
+    except Invoice.DoesNotExist:
+        return HttpResponse(status=404)
+    except ForbiddenTransition:
+        return JsonResponse(
+            status=400,
+            data=HttpError(
+                type='bad_request',
+                code='forbidden_transition',
+                message=f'invoice cannot be cancelled',
+            ).model_dump()
+        )
+
     return HttpResponse(status=204)
