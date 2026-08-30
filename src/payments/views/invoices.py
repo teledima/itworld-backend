@@ -1,5 +1,6 @@
 from django.views.decorators.http import require_POST, require_GET
 from django.http.response import JsonResponse, HttpResponse
+from django.db import DatabaseError
 from payments.decorators import validate_body
 from payments.services import invoice as invoice_svc
 from payments.schemas.invoice import CreateInvoice, Invoice as InvoiceSchema, InvoiceDetailed, InvoicePayment
@@ -54,6 +55,15 @@ def cancel(request, id: int):
         invoice_svc.cancel(request.auth, id)
     except Invoice.DoesNotExist:
         return HttpResponse(status=404)
+    except DatabaseError:
+        return JsonResponse(
+            status=400,
+            data=HttpError(
+                type='bad_request',
+                code='temporary_locked',
+                message='you cannot cancel invoice while it is using'
+            )
+        )
     except ForbiddenTransition:
         return JsonResponse(
             status=400,

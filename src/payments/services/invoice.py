@@ -35,7 +35,7 @@ def get_invoice_info(project: Project, id: int) -> tuple[Invoice, list[Ledger]]:
 
 @transaction.atomic
 def cancel(project: Project, id: int) -> None:
-    invoice = Invoice.objects.select_for_update().get(pk=id, project_id=project.pk)
+    invoice = Invoice.objects.select_for_update(nowait=True).get(pk=id, project_id=project.pk)
     # TODO: логика для возврата платежей. создание заданий для джобы
     invoice.set_status(InvoiceStatus.CANCELLED)
     invoice.save()
