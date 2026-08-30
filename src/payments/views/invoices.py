@@ -19,30 +19,33 @@ def create(request, invoice: CreateInvoice):
 
 @require_GET
 def get_by_id(request, id: int):
-    invoice, ledgers = invoice_svc.get_invoice_info(request.auth, id)
+    try:
+        invoice, ledgers = invoice_svc.get_invoice_info(request.auth, id)
+    except Invoice.DoesNotExist:
+        return HttpResponse(status=404)
+    else:
+        detailed = InvoiceDetailed(
+            id=invoice.id,
+            amount=invoice.amount,
+            paied=invoice_svc.paied_amount(invoice),
+            currency=invoice.currency,
+            status=invoice.status,
+            payments=[
+                InvoicePayment(
+                    id=ledger.payment.id,
+                    amount=ledger.payment.amount,
+                    exchange_amount=ledger.amount,
+                    exchange_rate=ledger.exchange_rate,
+                    currency=ledger.payment.currency,
+                    dt=ledger.dt,
+                )
+                for ledger in ledgers
+            ],
+            created_at=invoice.created_at,
+            expired_at=invoice.expired_at,
+        )
 
-    detailed = InvoiceDetailed(
-        id=invoice.id,
-        amount=invoice.amount,
-        paied=invoice_svc.paied_amount(invoice),
-        currency=invoice.currency,
-        status=invoice.status,
-        payments=[
-            InvoicePayment(
-                id=ledger.payment.id,
-                amount=ledger.payment.amount,
-                exchange_amount=ledger.amount,
-                exchange_rate=ledger.exchange_rate,
-                currency=ledger.payment.currency,
-                dt=ledger.dt,
-            )
-            for ledger in ledgers
-        ],
-        created_at=invoice.created_at,
-        expired_at=invoice.expired_at,
-    )
-
-    return JsonResponse(detailed.model_dump())
+        return JsonResponse(detailed.model_dump())
 
 
 @require_POST
