@@ -42,6 +42,7 @@ def process_payment(payment: PaymentSchema):
 
         fund_ledger = Ledger(
             merchant=invoice.project.merchant,
+            project=invoice.project,
             invoice=invoice,
             payment=new_payment,
             amount=exchanged_amount,
@@ -61,6 +62,7 @@ def process_payment(payment: PaymentSchema):
 
         fee_ledger = Ledger(
             merchant=invoice.project.merchant,
+            project=invoice.project,
             invoice=invoice,
             payment=None,
             amount=_calculate_fee(exchanged_amount),

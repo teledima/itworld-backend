@@ -3,12 +3,14 @@ from django.db.models import Q
 from payments.models.merchant import Merchant
 from payments.models.payment import Payment
 from payments.models.invoice import Invoice
+from payments.models.project import Project
 
 
 class Ledger(models.Model):
     LedgerType = models.TextChoices("LedgerType", "FUND FEE")
 
     merchant = models.ForeignKey(Merchant, on_delete=models.RESTRICT)
+    project = models.ForeignKey(Project, on_delete=models.RESTRICT)
     invoice = models.ForeignKey(Invoice, on_delete=models.RESTRICT, null=True)
     payment = models.ForeignKey(Payment, on_delete=models.RESTRICT, null=True)
     amount = models.DecimalField(max_digits=12, decimal_places=4)
