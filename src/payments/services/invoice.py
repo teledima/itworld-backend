@@ -1,13 +1,18 @@
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
-from django.db.models import Sum
+
 from django.db import transaction
+from django.db.models import Sum
+
+from payments.models import Invoice, InvoiceStatus, Ledger, Notification, Project
 from payments.schemas.invoice import CreateInvoice
-from payments.models import Invoice, InvoiceStatus, Project, Ledger, Notification
 
 
 def create_invoice(project: Project, invoice: CreateInvoice) -> Invoice:
-    invoices = Invoice.objects.filter(project_id=project.pk, idempotency_key=invoice.idempotency_key)
+    invoices = Invoice.objects.filter(
+        project_id=project.pk,
+        idempotency_key=invoice.idempotency_key,
+    )
 
     if len(invoices) == 0:
         new_invoice = Invoice(
@@ -26,14 +31,22 @@ def create_invoice(project: Project, invoice: CreateInvoice) -> Invoice:
 
 def get_invoice_info(project: Project, id: int) -> tuple[Invoice, list[Ledger]]:
     invoice = Invoice.objects.get(pk=id, project_id=project.pk)
-    ledgers = invoice.ledger_set.order_by('-dt').filter(payment__isnull=False, type=Ledger.LedgerType.FUND).all()
+    ledgers = (
+        invoice.ledger_set
+            .order_by('-dt')
+            .filter(payment__isnull=False, type=Ledger.LedgerType.FUND).all()
+    )
 
     return invoice, ledgers
 
 
 @transaction.atomic
 def cancel(project: Project, id: int) -> None:
-    invoice = Invoice.objects.select_for_update(nowait=True).get(pk=id, project_id=project.pk)
+    invoice = (
+        Invoice.objects
+            .select_for_update(nowait=True)
+            .get(pk=id, project_id=project.pk)
+    )
     # TODO: логика для возврата платежей. создание заданий для джобы
     Notification(invoice=invoice).save()
 

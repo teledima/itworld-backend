@@ -1,9 +1,10 @@
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.views.decorators.http import require_POST
-from django.http import HttpRequest, JsonResponse, HttpResponse
 from loguru import logger
-from payments.schemas.payment import Payment
+
 from payments.decorators import validate_body
 from payments.errors import HttpError
+from payments.schemas.payment import Payment
 from payments.services.payment import process_payment
 
 
@@ -23,5 +24,5 @@ def payments(request: HttpRequest, payment: Payment):
         )
 
     process_payment(payment)
-    
+
     return HttpResponse(status=204)

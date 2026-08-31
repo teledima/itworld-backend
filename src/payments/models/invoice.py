@@ -1,7 +1,7 @@
-from decimal import Decimal
 
 from django.db import models
 from loguru import logger
+
 from payments.models import Project
 
 
@@ -20,10 +20,28 @@ class InvoiceStatus(models.TextChoices):
 
 
 fsm = {
-    InvoiceStatus.NEW: frozenset([InvoiceStatus.PENDING, InvoiceStatus.PAID, InvoiceStatus.UNDERPAID, InvoiceStatus.OVERPAID, InvoiceStatus.EXPIRED, InvoiceStatus.CANCELLED]),
-    InvoiceStatus.PENDING: frozenset([InvoiceStatus.PAID, InvoiceStatus.UNDERPAID, InvoiceStatus.OVERPAID, InvoiceStatus.EXPIRED, InvoiceStatus.CANCELLED]),
+    InvoiceStatus.NEW: frozenset([
+        InvoiceStatus.PENDING,
+        InvoiceStatus.PAID,
+        InvoiceStatus.UNDERPAID,
+        InvoiceStatus.OVERPAID,
+        InvoiceStatus.EXPIRED,
+        InvoiceStatus.CANCELLED,
+    ]),
+    InvoiceStatus.PENDING: frozenset([
+        InvoiceStatus.PAID,
+        InvoiceStatus.UNDERPAID,
+        InvoiceStatus.OVERPAID,
+        InvoiceStatus.EXPIRED,
+        InvoiceStatus.CANCELLED,
+    ]),
     InvoiceStatus.PAID: frozenset(),
-    InvoiceStatus.UNDERPAID: frozenset([InvoiceStatus.PAID, InvoiceStatus.OVERPAID, InvoiceStatus.EXPIRED, InvoiceStatus.CANCELLED]),
+    InvoiceStatus.UNDERPAID: frozenset([
+        InvoiceStatus.PAID,
+        InvoiceStatus.OVERPAID,
+        InvoiceStatus.EXPIRED,
+        InvoiceStatus.CANCELLED,
+    ]),
     InvoiceStatus.OVERPAID: frozenset(),
     InvoiceStatus.EXPIRED: frozenset(),
     InvoiceStatus.CANCELLED: frozenset(),

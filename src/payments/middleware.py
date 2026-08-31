@@ -1,5 +1,6 @@
-from django.http.request import HttpRequest
 from django.core.exceptions import PermissionDenied
+from django.http.request import HttpRequest
+
 from payments.models import Project
 
 

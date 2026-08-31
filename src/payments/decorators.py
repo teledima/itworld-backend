@@ -1,8 +1,8 @@
-from functools import wraps
-from loguru import logger
 import json
+from functools import wraps
 
 from django.http import JsonResponse
+from loguru import logger
 from pydantic import BaseModel, ValidationError
 
 
@@ -21,7 +21,7 @@ def validate_body(schema: type[BaseModel], arg_name: str, enable_logging: bool =
                 except json.JSONDecodeError:
                     logger.warning('Invalid JSON format')
                     return JsonResponse(
-                        {'detail': 'Invalid JSON format'}, 
+                        {'detail': 'Invalid JSON format'},
                         status=400
                     )
 
@@ -31,11 +31,11 @@ def validate_body(schema: type[BaseModel], arg_name: str, enable_logging: bool =
                     errors = e.errors()
                     logger.bind(errors=errors).warning('invalid body')
                     return JsonResponse(
-                        {'detail': errors}, 
+                        {'detail': errors},
                         status=422,
                     )
 
-            kwargs[arg_name] = validated_data    
+            kwargs[arg_name] = validated_data
             return view_func(request, *args, **kwargs)
 
         return _wrapped_view

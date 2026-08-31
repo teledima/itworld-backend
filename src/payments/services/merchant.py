@@ -1,8 +1,9 @@
 from decimal import Decimal
 
-from django.db.models import Case, Subquery, Sum, Value, When, F, Count, OuterRef
+from django.db.models import Case, Count, F, OuterRef, Subquery, Sum, Value, When
 from django.db.models.functions import TruncDate
-from payments.models import ExchangeRate, Ledger, Invoice, InvoiceStatus
+
+from payments.models import ExchangeRate, Invoice, InvoiceStatus, Ledger
 from payments.schemas.merchant import MerchantReportRequest
 
 
@@ -24,13 +25,27 @@ def get_balance(id: int):
 
 
 def get_report(id: int, params: MerchantReportRequest):
-    exchange_rate_subquery__invoice = ExchangeRate.objects.filter(base_currency=OuterRef('currency'), target_currency=params.currency).values('rate')[:1]
+    exchange_rate_subquery__invoice = ExchangeRate.objects.filter(
+        base_currency=OuterRef('currency'),
+        target_currency=params.currency
+    ).values('rate')[:1]
+    group_by__invoice = (
+        F('project')
+        if params.group_by == 'project'
+        else TruncDate(F('updated_at'))
+    )
+
     invoice_cte = (
         Invoice.objects
             .filter(project__merchant=id)
-            .values(group=F('project') if params.group_by == 'project' else TruncDate(F('updated_at')))
+            .values(group=group_by__invoice)
             .annotate(
-                payed_cnt=Sum(Case(When(status__in=[InvoiceStatus.PAID, InvoiceStatus.OVERPAID], then=Value(1)), default=Value(0))),
+                payed_cnt=Sum(
+                    Case(
+                        When(status__in=[InvoiceStatus.PAID, InvoiceStatus.OVERPAID], then=Value(1)),  # noqa: E501
+                        default=Value(0),
+                    )
+                ),
                 total_cnt=Count(1),
                 all_invoice_amount=Sum(
                     Case(
@@ -41,23 +56,46 @@ def get_report(id: int, params: MerchantReportRequest):
             )
     )
 
-    exchange_rate_subquery__ledger = ExchangeRate.objects.filter(base_currency=OuterRef('invoice__currency'), target_currency=params.currency).values('rate')[:1]
+    exchange_rate_subquery__ledger = ExchangeRate.objects.filter(
+        base_currency=OuterRef('invoice__currency'),
+        target_currency=params.currency
+    ).values('rate')[:1]
+    group_by__ledger = (
+        F('project')
+        if params.group_by == 'project'
+        else TruncDate(F('dt'))
+    )
+
     ledger_cte = (
         Ledger.objects
             .filter(merchant=id)
-            .values(group=F('project') if params.group_by == 'project' else TruncDate(F('dt')))
+            .values(group=group_by__ledger)
             .annotate(
                 fund_amount=Sum(
                     Case(
-                        When(invoice__currency=params.currency, type=Ledger.LedgerType.FUND, then=F('amount')),
-                        When(type=Ledger.LedgerType.FUND, then=Subquery(exchange_rate_subquery__ledger) * F('amount')),
+                        When(
+                            invoice__currency=params.currency,
+                            type=Ledger.LedgerType.FUND,
+                            then=F('amount'),
+                        ),
+                        When(
+                            type=Ledger.LedgerType.FUND,
+                            then=Subquery(exchange_rate_subquery__ledger) * F('amount')
+                        ),
                         default=Value(Decimal(0)),
                     )
                 ),
                 fee_amount=Sum(
                     Case(
-                        When(invoice__currency=params.currency, type=Ledger.LedgerType.FEE, then=F('amount')),
-                        When(type=Ledger.LedgerType.FEE, then=Subquery(exchange_rate_subquery__ledger) * F('amount')),
+                        When(
+                            invoice__currency=params.currency,
+                            type=Ledger.LedgerType.FEE,
+                            then=F('amount'),
+                        ),
+                        When(
+                            type=Ledger.LedgerType.FEE,
+                            then=Subquery(exchange_rate_subquery__ledger) * F('amount'),
+                        ),
                         default=Value(Decimal(0)),
                     )
                 ),

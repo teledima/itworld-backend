@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 
 from django.core.management.base import BaseCommand
 from django.db import transaction
+
 from payments.models import Invoice, InvoiceStatus
 from payments.services.invoice import expire
 
@@ -16,7 +17,11 @@ class Command(BaseCommand):
     @transaction.atomic
     def handle(self, *args, **options):
         invoices = Invoice.objects.filter(
-            status__in=[InvoiceStatus.NEW, InvoiceStatus.PENDING, InvoiceStatus.UNDERPAID],
+            status__in=[
+                InvoiceStatus.NEW,
+                InvoiceStatus.PENDING,
+                InvoiceStatus.UNDERPAID,
+            ],
             expired_at__lt=datetime.now(tz=timezone.utc),
         )
 
@@ -26,7 +31,11 @@ class Command(BaseCommand):
             )
 
         if options.get('dry_run'):
-            return 'invoices to expire: ' + ','.join([str(invoice.pk) for invoice in invoices.iterator(chunk_size=2000)])
+            return 'invoices to expire: ' + ','.join([
+                str(invoice.pk)
+                for invoice
+                in invoices.iterator(chunk_size=2000)
+            ])
 
 
         for invoice in invoices.select_for_update().iterator(chunk_size=2000):

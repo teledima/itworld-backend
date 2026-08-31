@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 
 from django.core.management.base import BaseCommand
+
 from payments.models import Notification, NotificationStatus
 from payments.services.notification import send
 
@@ -21,13 +22,14 @@ class Command(BaseCommand):
             'invoice__project__webhook_secret',
         )
 
-        for notification in notifications.select_for_update(skip_locked=True).iterator(chunk_size=2000):
+        it = notifications.select_for_update(skip_locked=True).iterator(chunk_size=2000)
+        for notification in it:
             try:
                 send(notification)
                 notification.status = NotificationStatus.SENT
                 notification.sent_at = datetime.now(tz=timezone.utc)
                 success_cnt += 1
-            except:
+            except Exception:
                 notification.status = NotificationStatus.FAILED
                 failed_cnt += 1
             finally:

@@ -1,11 +1,15 @@
-from decimal import Decimal
 
-from django.views.decorators.http import require_GET
-from django.http.response import JsonResponse
 from django.http.request import HttpRequest
-from payments.schemas.merchant import MechantBalance, MerchantReportRequest, MerchantReport
-from payments.services import merchant as merchant_svc
+from django.http.response import JsonResponse
+from django.views.decorators.http import require_GET
 from pydantic import ValidationError
+
+from payments.schemas.merchant import (
+    MechantBalance,
+    MerchantReport,
+    MerchantReportRequest,
+)
+from payments.services import merchant as merchant_svc
 
 
 @require_GET
@@ -35,7 +39,7 @@ def report(request: HttpRequest, id: int):
         )
     except ValidationError as e:
         return JsonResponse(
-            {'detail': e.errors()}, 
+            {'detail': e.errors()},
             status=422,
         )
     else:

@@ -1,12 +1,13 @@
-from decimal import Decimal
 from datetime import datetime, timezone
+from decimal import Decimal
 
 from django.db import transaction
 from loguru import logger
+
+from payments.models import ExchangeRate, Invoice, InvoiceStatus, Ledger, Payment
 from payments.schemas.payment import Payment as PaymentSchema
-from payments.models import Payment, Invoice, InvoiceStatus, Ledger, ExchangeRate
-from payments.services.invoice import paied_amount
 from payments.services.currency import exchange
+from payments.services.invoice import paied_amount
 
 
 @transaction.atomic
@@ -22,10 +23,18 @@ def process_payment(payment: PaymentSchema):
     invoice = Invoice.objects.select_for_update().get(pk=payment.invoice_id)
 
     if (
-        invoice.status in (InvoiceStatus.PAID, InvoiceStatus.OVERPAID, InvoiceStatus.EXPIRED, InvoiceStatus.CANCELLED)
+        invoice.status in (
+            InvoiceStatus.PAID,
+            InvoiceStatus.OVERPAID,
+            InvoiceStatus.EXPIRED,
+            InvoiceStatus.CANCELLED,
+        )
         or invoice.expired_at < datetime.now(tz=timezone.utc)
     ):
-        logger.bind(invoice_id=invoice.pk, transaction_id=payment.transaction_id).info('Invoice finished. Planning refund')
+        logger.bind(
+            invoice_id=invoice.pk,
+            transaction_id=payment.transaction_id
+        ).info('Invoice finished. Planning refund')
         # TODO: реализовать возврат средств
         return
 
@@ -90,8 +99,8 @@ def _exchange(payment: PaymentSchema, invoice: Invoice) -> tuple[Decimal, Decima
             invoice_currency=invoice.currency,
             payment_currency=payment.currency,
         ).error("Exchange rate not found")
-        # TODO: добавить логику обработки (логирование и/или попытка получения информации из внешнего источника)
-    
+        # TODO: добавить логику обработки
+
         raise
 
 

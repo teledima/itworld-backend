@@ -21,6 +21,18 @@ class MerchantReport(BaseModel):
     group: str = Field(description='Значение поле группировки')
     payed_cnt: int = Field(description='Количество оплаченных счетов')
     total_cnt: int = Field(description='Количество выставленных счетов')
-    all_invoice_amount: Decimal = Field(description='Сумма выставленная', max_digits=16, decimal_places=4)
-    fund_amount: Decimal = Field(description='Сумма фактически полученная', max_digits=16, decimal_places=4)
-    fee_amount: Decimal = Field(description='Сумма удержанной комиссии', max_digits=16, decimal_places=4)
+    all_invoice_amount: Decimal = Field(
+        description='Сумма выставленная',
+        max_digits=16,
+        decimal_places=4,
+    )
+    fund_amount: Decimal = Field(
+        description='Сумма фактически полученная',
+        max_digits=16,
+        decimal_places=4,
+    )
+    fee_amount: Decimal = Field(
+        description='Сумма удержанной комиссии',
+        max_digits=16,
+        decimal_places=4,
+    )
