@@ -1,7 +1,11 @@
+from decimal import Decimal
+
 from django.views.decorators.http import require_GET
-from django.http.response import HttpResponse, JsonResponse
-from payments.schemas.merchant import MechantBalance
+from django.http.response import JsonResponse
+from django.http.request import HttpRequest
+from payments.schemas.merchant import MechantBalance, MerchantReportRequest, MerchantReport
 from payments.services import merchant as merchant_svc
+from pydantic import ValidationError
 
 
 @require_GET
@@ -21,5 +25,33 @@ def balance(request, id: int):
 
 
 @require_GET
-def report(request, id: int):
-    return HttpResponse(status=204)
+def report(request: HttpRequest, id: int):
+    try:
+        params = MerchantReportRequest(
+            date_from=request.GET.get('date_from'),
+            date_to=request.GET.get('date_to'),
+            group_by=request.GET.get('group_by'),
+            currency=request.GET.get('currency')
+        )
+    except ValidationError as e:
+        return JsonResponse(
+            {'detail': e.errors()}, 
+            status=422,
+        )
+    else:
+        report = merchant_svc.get_report(id, params)
+
+        return JsonResponse(
+            data=[
+                MerchantReport(
+                    group=str(row['group']),
+                    payed_cnt=row['payed_cnt'],
+                    total_cnt=row['total_cnt'],
+                    all_invoice_amount=row['all_invoice_amount'],
+                    fund_amount=row['fund_amount'],
+                    fee_amount=row['fee_amount'],
+                ).model_dump()
+                for row in report
+            ],
+            safe=False,
+        )

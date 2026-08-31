@@ -1,6 +1,7 @@
 from django.db import models
 from loguru import logger
 from payments.models.project import Project
+from payments.models.exchange_rate import ExchangeRate
 
 
 class ForbiddenTransition(Exception):
@@ -36,6 +37,7 @@ class Invoice(models.Model):
     idempotency_key = models.UUIDField()
 
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     expired_at = models.DateTimeField()
 
     class Meta:
