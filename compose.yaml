@@ -1,0 +1,26 @@
+services:
+  server:
+    build: .
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    post_start:
+      - command: python manage.py migrate
+
+  server_manage:
+    build: .
+    container_name: server_manage
+    entrypoint: python manage.py
+
+  db:
+    image: postgres:18-alpine
+    environment:
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - itworld-storage:/var/lib/postgesql
+
+volumes:
+  itworld-storage:
