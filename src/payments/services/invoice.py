@@ -3,10 +3,7 @@ from decimal import Decimal
 from django.db.models import Sum
 from django.db import transaction
 from payments.schemas.invoice import CreateInvoice
-from payments.models.invoice import Invoice, InvoiceStatus
-from payments.models.project import Project
-from payments.models.ledger import Ledger
-from payments.models.notification import Notification
+from payments.models import Invoice, InvoiceStatus, Project, Ledger, Notification
 
 
 def create_invoice(project: Project, invoice: CreateInvoice) -> Invoice:

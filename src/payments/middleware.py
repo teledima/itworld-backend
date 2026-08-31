@@ -1,6 +1,6 @@
 from django.http.request import HttpRequest
 from django.core.exceptions import PermissionDenied
-from payments.models.project import Project
+from payments.models import Project
 
 
 class AuthTokenMiddleware:

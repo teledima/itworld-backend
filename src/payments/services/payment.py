@@ -4,10 +4,7 @@ from datetime import datetime, timezone
 from django.db import transaction
 from loguru import logger
 from payments.schemas.payment import Payment as PaymentSchema
-from payments.models.payment import Payment
-from payments.models.invoice import Invoice, InvoiceStatus
-from payments.models.ledger import Ledger
-from payments.models.exchange_rate import ExchangeRate
+from payments.models import Payment, Invoice, InvoiceStatus, Ledger, ExchangeRate
 from payments.services.invoice import paied_amount
 from payments.services.currency import exchange
 

@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from payments.models.invoice import Invoice, InvoiceStatus
+from payments.models import Invoice, InvoiceStatus
 from payments.services.invoice import expire
 
 

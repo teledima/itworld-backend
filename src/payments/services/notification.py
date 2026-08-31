@@ -3,7 +3,7 @@ import hmac
 import json
 import requests
 
-from payments.models.notification import Notification
+from payments.models import Notification
 
 
 def send(n: Notification):

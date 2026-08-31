@@ -2,7 +2,7 @@ from decimal import Decimal
 
 from django.db import models
 from loguru import logger
-from payments.models.project import Project
+from payments.models import Project
 
 
 class ForbiddenTransition(Exception):

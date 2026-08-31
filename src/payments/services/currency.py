@@ -1,6 +1,6 @@
 from decimal import Decimal
 
-from payments.models.exchange_rate import ExchangeRate
+from payments.models import ExchangeRate
 
 
 def exchange(base_currency, target_currency) -> Decimal:

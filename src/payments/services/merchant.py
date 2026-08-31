@@ -2,9 +2,7 @@ from decimal import Decimal
 
 from django.db.models import Case, Subquery, Sum, Value, When, F, Count, OuterRef
 from django.db.models.functions import TruncDate
-from payments.models.exchange_rate import ExchangeRate
-from payments.models.ledger import Ledger
-from payments.models.invoice import Invoice, InvoiceStatus
+from payments.models import ExchangeRate, Ledger, Invoice, InvoiceStatus
 from payments.schemas.merchant import MerchantReportRequest
 
 

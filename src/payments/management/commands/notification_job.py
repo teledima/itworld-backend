@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 
 from django.core.management.base import BaseCommand
-from payments.models.notification import Notification, NotificationStatus
+from payments.models import Notification, NotificationStatus
 from payments.services.notification import send
 
 
