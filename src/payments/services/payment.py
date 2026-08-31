@@ -1,4 +1,5 @@
 from decimal import Decimal
+from datetime import datetime, timezone
 
 from django.db import transaction
 from loguru import logger
@@ -23,7 +24,10 @@ def process_payment(payment: PaymentSchema):
 
     invoice = Invoice.objects.select_for_update().get(pk=payment.invoice_id)
 
-    if invoice.status in (InvoiceStatus.PAID, InvoiceStatus.OVERPAID, InvoiceStatus.EXPIRED, InvoiceStatus.CANCELLED):
+    if (
+        invoice.status in (InvoiceStatus.PAID, InvoiceStatus.OVERPAID, InvoiceStatus.EXPIRED, InvoiceStatus.CANCELLED)
+        or invoice.expired_at < datetime.now(tz=timezone.utc)
+    ):
         logger.bind(invoice_id=invoice.pk, transaction_id=payment.transaction_id).info('Invoice finished. Planning refund')
         # TODO: реализовать возврат средств
         return
