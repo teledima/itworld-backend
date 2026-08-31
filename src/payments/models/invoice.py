@@ -1,7 +1,8 @@
+from decimal import Decimal
+
 from django.db import models
 from loguru import logger
 from payments.models.project import Project
-from payments.models.exchange_rate import ExchangeRate
 
 
 class ForbiddenTransition(Exception):
@@ -51,6 +52,10 @@ class Invoice(models.Model):
             models.UniqueConstraint(
                 fields=('project', 'idempotency_key'),
                 name='invoice_project_idempotency_key_key',
+            ),
+            models.CheckConstraint(
+                condition=models.Q(amount__gte=10),
+                name='min_amount_check'
             )
         ]
 
