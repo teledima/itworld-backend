@@ -109,6 +109,6 @@ def get_report(id: int, params: MerchantReportRequest):
         ledger_map[ledger['group']] = ledger
 
     for invoice in invoice_cte:
-        res.append({**invoice, **ledger_map[invoice['group']]})
+        res.append({**invoice, **ledger_map.get(invoice['group'], {})})
 
     return res

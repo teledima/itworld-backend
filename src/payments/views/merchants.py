@@ -52,8 +52,8 @@ def report(request: HttpRequest, id: int):
                     payed_cnt=row['payed_cnt'],
                     total_cnt=row['total_cnt'],
                     all_invoice_amount=row['all_invoice_amount'],
-                    fund_amount=row['fund_amount'],
-                    fee_amount=row['fee_amount'],
+                    fund_amount=row.get('fund_amount', 0),
+                    fee_amount=row.get('fee_amount', 0),
                 ).model_dump()
                 for row in report
             ],

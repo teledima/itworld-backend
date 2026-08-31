@@ -23,7 +23,7 @@ class Command(BaseCommand):
                 InvoiceStatus.UNDERPAID,
             ],
             expired_at__lt=datetime.now(tz=timezone.utc),
-        )
+        ).only('id')
 
         if merchants := options.get('merchant_ids'):
             invoices = invoices.filter(
@@ -36,7 +36,6 @@ class Command(BaseCommand):
                 for invoice
                 in invoices.iterator(chunk_size=2000)
             ])
-
 
         for invoice in invoices.select_for_update().iterator(chunk_size=2000):
             expire(invoice)

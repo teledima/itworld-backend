@@ -19,15 +19,29 @@ from payments.services.invoice import paied_amount
 
 @transaction.atomic
 def process_payment(payment: PaymentSchema):
-    payments = Payment.objects.filter(
+    payments_cnt = Payment.objects.filter(
         invoice_id=payment.invoice_id,
         transaction_id=payment.transaction_id,
-    )
+    ).count()
 
-    if len(payments) > 0:
+    if payments_cnt > 0:
         return
 
-    invoice = Invoice.objects.select_for_update().get(pk=payment.invoice_id)
+    invoice = (
+        Invoice.objects
+            .select_related('project', 'project__merchant')
+            .only(
+                'id',
+                'amount',
+                'currency',
+                'status',
+                'expired_at',
+                'project__id',
+                'project__merchant__id'
+            )
+            .select_for_update()
+            .get(pk=payment.invoice_id)
+    )
 
     if (
         invoice.status in (

@@ -26,10 +26,12 @@ class Ledger(models.Model):
     class Meta:
         indexes = [
             models.Index(
-                fields=['merchant', 'dt'],
-                name='ledger_merchant_dt_idx'
-            ),
+                fields=['invoice_id', 'type'],
+                include=['amount'],
+                name='ledger_invoice_id_type_idx',
+            )
         ]
+
         constraints = [
             models.CheckConstraint(
                 condition=Q(amount__gt=0),

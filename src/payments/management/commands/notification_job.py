@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 
 from django.core.management.base import BaseCommand
+from django.db import transaction
 
 from payments.models import Notification, NotificationStatus
 from payments.services.notification import send
@@ -9,6 +10,7 @@ from payments.services.notification import send
 class Command(BaseCommand):
     help = 'Send notifications job'
 
+    @transaction.atomic
     def handle(self, *args, **options):
         success_cnt, failed_cnt = 0, 0
         notifications = Notification.objects.select_related('invoice__project').filter(

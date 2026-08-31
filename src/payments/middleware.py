@@ -11,12 +11,14 @@ class AuthTokenMiddleware:
     def __call__(self, request: HttpRequest):
         if request.path.startswith('/api'):
             api_key = request.headers.get('X-Api-Key')
-            p = Project.objects.filter(api_key=api_key)
-
-            if not api_key or len(p) == 0:
+            if not api_key:
                 raise PermissionDenied
 
-            request.auth = p.get()
+            p = Project.objects.filter(api_key=api_key).first()
+            if not p:
+                raise PermissionDenied
+
+            request.auth = p
 
         response = self.get_response(request)
 

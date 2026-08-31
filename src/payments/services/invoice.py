@@ -37,11 +37,21 @@ def create_invoice(project: Project, invoice: CreateInvoice) -> Invoice:
 
 
 def get_invoice_info(project: Project, id: int) -> tuple[Invoice, list[Ledger]]:
-    invoice = Invoice.objects.get(pk=id, project_id=project.pk)
+    invoice = Invoice.objects.defer('idempotency_key').get(pk=id, project_id=project.pk)
     ledgers = (
         invoice.ledger_set
             .order_by('-dt')
             .filter(payment__isnull=False, type=LedgerType.FUND)
+            .select_related('payment')
+            .only(
+                'id',
+                'amount',
+                'exchange_rate',
+                'dt',
+                'payment__id',
+                'payment__amount',
+                'payment__currency',
+            )
     )
 
     return invoice, ledgers
