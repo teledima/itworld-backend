@@ -7,9 +7,12 @@ from payments.models.payment import Payment
 from payments.models.project import Project
 
 
-class Ledger(models.Model):
-    LedgerType = models.TextChoices("LedgerType", "FUND FEE")
+class LedgerType(models.TextChoices):
+    FUND = 'FUND'
+    FEE = 'FEE'
 
+
+class Ledger(models.Model):
     merchant = models.ForeignKey(Merchant, on_delete=models.RESTRICT)
     project = models.ForeignKey(Project, on_delete=models.RESTRICT)
     invoice = models.ForeignKey(Invoice, on_delete=models.RESTRICT, null=True)

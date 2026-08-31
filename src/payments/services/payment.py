@@ -4,7 +4,14 @@ from decimal import Decimal
 from django.db import transaction
 from loguru import logger
 
-from payments.models import ExchangeRate, Invoice, InvoiceStatus, Ledger, Payment
+from payments.models import (
+    ExchangeRate,
+    Invoice,
+    InvoiceStatus,
+    Ledger,
+    LedgerType,
+    Payment,
+)
 from payments.schemas.payment import Payment as PaymentSchema
 from payments.services.currency import exchange
 from payments.services.invoice import paied_amount
@@ -57,7 +64,7 @@ def process_payment(payment: PaymentSchema):
             payment=new_payment,
             amount=exchanged_amount,
             exchange_rate=rate,
-            type=Ledger.LedgerType.FUND,
+            type=LedgerType.FUND,
         )
 
         new_payment.save()
@@ -77,7 +84,7 @@ def process_payment(payment: PaymentSchema):
             payment=None,
             amount=_calculate_fee(exchanged_amount),
             exchange_rate=1,
-            type=Ledger.LedgerType.FEE,
+            type=LedgerType.FEE,
         )
         fee_ledger.save()
     else:

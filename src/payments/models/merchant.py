@@ -1,9 +1,12 @@
 from django.db import models
 
 
-class Merchant(models.Model):
-    MerchantStatus = models.TextChoices("StatusEnum", "ACTIVE BLOCKED")
+class MerchantStatus(models.TextChoices):
+    ACTIVE = 'ACTIVE'
+    BLOCKED = 'BLOCKED'
 
+
+class Merchant(models.Model):
     name = models.CharField()
     status = models.CharField(choices=MerchantStatus)
 

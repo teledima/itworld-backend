@@ -3,7 +3,7 @@ from decimal import Decimal
 from django.db.models import Case, Count, F, OuterRef, Subquery, Sum, Value, When
 from django.db.models.functions import TruncDate
 
-from payments.models import ExchangeRate, Invoice, InvoiceStatus, Ledger
+from payments.models import ExchangeRate, Invoice, InvoiceStatus, Ledger, LedgerType
 from payments.schemas.merchant import MerchantReportRequest
 
 
@@ -15,8 +15,8 @@ def get_balance(id: int):
             .annotate(
                 total_amount=Sum(
                     Case(
-                        When(type=Ledger.LedgerType.FUND, then=F('amount')),
-                        When(type=Ledger.LedgerType.FEE, then=-F('amount')),
+                        When(type=LedgerType.FUND, then=F('amount')),
+                        When(type=LedgerType.FEE, then=-F('amount')),
                         default=Value(Decimal(0)),
                     )
                 )
@@ -75,11 +75,11 @@ def get_report(id: int, params: MerchantReportRequest):
                     Case(
                         When(
                             invoice__currency=params.currency,
-                            type=Ledger.LedgerType.FUND,
+                            type=LedgerType.FUND,
                             then=F('amount'),
                         ),
                         When(
-                            type=Ledger.LedgerType.FUND,
+                            type=LedgerType.FUND,
                             then=Subquery(exchange_rate_subquery__ledger) * F('amount')
                         ),
                         default=Value(Decimal(0)),
@@ -89,11 +89,11 @@ def get_report(id: int, params: MerchantReportRequest):
                     Case(
                         When(
                             invoice__currency=params.currency,
-                            type=Ledger.LedgerType.FEE,
+                            type=LedgerType.FEE,
                             then=F('amount'),
                         ),
                         When(
-                            type=Ledger.LedgerType.FEE,
+                            type=LedgerType.FEE,
                             then=Subquery(exchange_rate_subquery__ledger) * F('amount'),
                         ),
                         default=Value(Decimal(0)),

@@ -4,7 +4,14 @@ from decimal import Decimal
 from django.db import transaction
 from django.db.models import Sum
 
-from payments.models import Invoice, InvoiceStatus, Ledger, Notification, Project
+from payments.models import (
+    Invoice,
+    InvoiceStatus,
+    Ledger,
+    LedgerType,
+    Notification,
+    Project,
+)
 from payments.schemas.invoice import CreateInvoice
 
 
@@ -34,7 +41,7 @@ def get_invoice_info(project: Project, id: int) -> tuple[Invoice, list[Ledger]]:
     ledgers = (
         invoice.ledger_set
             .order_by('-dt')
-            .filter(payment__isnull=False, type=Ledger.LedgerType.FUND).all()
+            .filter(payment__isnull=False, type=LedgerType.FUND).all()
     )
 
     return invoice, ledgers
@@ -65,7 +72,7 @@ def expire(invoice: Invoice) -> None:
 def paied_amount(invoice: Invoice) -> Decimal:
     return Decimal(
         Ledger.objects
-            .filter(invoice_id=invoice.pk, type=Ledger.LedgerType.FUND)
+            .filter(invoice_id=invoice.pk, type=LedgerType.FUND)
             .aggregate(Sum('amount', default=0))
             .get('amount__sum')
     )
