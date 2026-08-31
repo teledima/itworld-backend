@@ -41,6 +41,12 @@ def cancel(project: Project, id: int) -> None:
     invoice.save()
 
 
+def expire(invoice: Invoice) -> None:
+    # TODO: логика для возврата платежей. создание заданий для джобы
+    invoice.set_status(InvoiceStatus.EXPIRED)
+    invoice.save()
+
+
 def paied_amount(invoice: Invoice) -> Decimal:
     return Decimal(
         Ledger.objects
