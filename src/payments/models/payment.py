@@ -4,7 +4,7 @@ from payments.models.invoice import Invoice
 
 
 class Payment(models.Model):
-    amount = models.DecimalField(max_digits=12, decimal_places=4)
+    amount = models.DecimalField(max_digits=24, decimal_places=10)
     currency = models.CharField(max_length=3)
     invoice = models.ForeignKey(Invoice, on_delete=models.RESTRICT)
     transaction_id = models.CharField(unique=True)

@@ -49,7 +49,7 @@ fsm = {
 
 
 class Invoice(models.Model):
-    amount = models.DecimalField(max_digits=16, decimal_places=4)
+    amount = models.DecimalField(max_digits=24, decimal_places=10)
     currency = models.CharField(max_length=3)
     status = models.CharField(choices=InvoiceStatus)
     project = models.ForeignKey(Project, on_delete=models.RESTRICT)

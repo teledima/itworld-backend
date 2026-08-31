@@ -17,9 +17,9 @@ class Ledger(models.Model):
     project = models.ForeignKey(Project, on_delete=models.RESTRICT)
     invoice = models.ForeignKey(Invoice, on_delete=models.RESTRICT, null=True)
     payment = models.ForeignKey(Payment, on_delete=models.RESTRICT, null=True)
-    amount = models.DecimalField(max_digits=12, decimal_places=4)
+    amount = models.DecimalField(max_digits=24, decimal_places=10)
     type = models.CharField(choices=LedgerType)
-    exchange_rate = models.DecimalField(max_digits=8, decimal_places=3)
+    exchange_rate = models.DecimalField(max_digits=18, decimal_places=10)
 
     dt = models.DateTimeField(auto_now_add=True)
 
