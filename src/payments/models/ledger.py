@@ -1,7 +1,10 @@
 from django.db import models
 from django.db.models import Q
 
-from payments.models import Invoice, Merchant, Payment, Project
+from payments.models.invoice import Invoice
+from payments.models.merchant import Merchant
+from payments.models.payment import Payment
+from payments.models.project import Project
 
 
 class Ledger(models.Model):

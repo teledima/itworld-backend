@@ -1,11 +1,13 @@
-from django.views.decorators.http import require_POST, require_GET
-from django.http.response import JsonResponse, HttpResponse
 from django.db import DatabaseError
+from django.http.response import HttpResponse, JsonResponse
+from django.views.decorators.http import require_GET, require_POST
+
 from payments.decorators import validate_body
-from payments.services import invoice as invoice_svc
-from payments.schemas.invoice import CreateInvoice, Invoice as InvoiceSchema, InvoiceDetailed, InvoicePayment
-from payments.models.invoice import Invoice, ForbiddenTransition
 from payments.errors import HttpError
+from payments.models.invoice import ForbiddenTransition, Invoice
+from payments.schemas.invoice import CreateInvoice, InvoiceDetailed, InvoicePayment
+from payments.schemas.invoice import Invoice as InvoiceSchema
+from payments.services import invoice as invoice_svc
 
 
 @require_POST
@@ -70,7 +72,7 @@ def cancel(request, id: int):
             data=HttpError(
                 type='bad_request',
                 code='forbidden_transition',
-                message=f'invoice cannot be cancelled',
+                message='invoice cannot be cancelled',
             ).model_dump()
         )
 

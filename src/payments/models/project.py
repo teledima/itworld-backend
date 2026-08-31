@@ -2,7 +2,7 @@ import uuid
 
 from django.db import models
 
-from payments.models import Merchant
+from payments.models.merchant import Merchant
 
 
 class Project(models.Model):

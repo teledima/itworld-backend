@@ -2,7 +2,7 @@
 from django.db import models
 from loguru import logger
 
-from payments.models import Project
+from payments.models.project import Project
 
 
 class ForbiddenTransition(Exception):
