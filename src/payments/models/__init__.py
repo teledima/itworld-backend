@@ -1,1 +1,1 @@
-from . import merchant, project, invoice, payment, ledger, exchange_rate
+from . import merchant, project, invoice, payment, ledger, exchange_rate, notification

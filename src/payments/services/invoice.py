@@ -6,6 +6,7 @@ from payments.schemas.invoice import CreateInvoice
 from payments.models.invoice import Invoice, InvoiceStatus
 from payments.models.project import Project
 from payments.models.ledger import Ledger
+from payments.models.notification import Notification
 
 
 def create_invoice(project: Project, invoice: CreateInvoice) -> Invoice:
@@ -37,12 +38,16 @@ def get_invoice_info(project: Project, id: int) -> tuple[Invoice, list[Ledger]]:
 def cancel(project: Project, id: int) -> None:
     invoice = Invoice.objects.select_for_update(nowait=True).get(pk=id, project_id=project.pk)
     # TODO: логика для возврата платежей. создание заданий для джобы
+    Notification(invoice=invoice).save()
+
     invoice.set_status(InvoiceStatus.CANCELLED)
     invoice.save()
 
 
 def expire(invoice: Invoice) -> None:
     # TODO: логика для возврата платежей. создание заданий для джобы
+    Notification(invoice=invoice).save()
+
     invoice.set_status(InvoiceStatus.EXPIRED)
     invoice.save()
 
