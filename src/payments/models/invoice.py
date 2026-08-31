@@ -78,7 +78,7 @@ class Invoice(models.Model):
         ]
 
     def set_status(self, target: InvoiceStatus) -> None:
-        if target not in fsm[self.status]:
+        if self.status != target and target not in fsm[self.status]:
             logger.bind(
                 invoice_id=self.pk,
                 status=self.status,

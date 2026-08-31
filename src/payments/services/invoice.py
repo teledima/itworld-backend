@@ -28,7 +28,7 @@ def create_invoice(project: Project, invoice: CreateInvoice) -> Invoice:
             status=InvoiceStatus.NEW,
             project=project,
             idempotency_key=invoice.idempotency_key,
-            expired_at=datetime.now(tz=timezone.utc) + timedelta(minutes=10),
+            expired_at=datetime.now(tz=timezone.utc) + timedelta(hours=2),
         )
 
         new_invoice.save()
@@ -41,7 +41,7 @@ def get_invoice_info(project: Project, id: int) -> tuple[Invoice, list[Ledger]]:
     ledgers = (
         invoice.ledger_set
             .order_by('-dt')
-            .filter(payment__isnull=False, type=LedgerType.FUND).all()
+            .filter(payment__isnull=False, type=LedgerType.FUND)
     )
 
     return invoice, ledgers

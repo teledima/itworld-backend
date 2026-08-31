@@ -82,7 +82,7 @@ def process_payment(payment: PaymentSchema):
             project=invoice.project,
             invoice=invoice,
             payment=None,
-            amount=_calculate_fee(exchanged_amount),
+            amount=_calculate_fee(invoice.amount),
             exchange_rate=1,
             type=LedgerType.FEE,
         )
