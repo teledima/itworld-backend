@@ -1,0 +1,38 @@
+GroupAggregate  (cost=172.54..346.14 rows=40 width=56) (actual time=0.175..0.222 rows=2.00 loops=1)
+  Group Key: payments_invoice.project_id
+  Buffers: shared hit=128
+  ->  Sort  (cost=172.54..172.64 rows=40 width=31) (actual time=0.100..0.102 rows=40.00 loops=1)
+        Sort Key: payments_invoice.project_id
+        Sort Method: quicksort  Memory: 27kB
+        Buffers: shared hit=48
+        ->  Nested Loop  (cost=8.75..171.48 rows=40 width=31) (actual time=0.031..0.078 rows=40.00 loops=1)
+              Buffers: shared hit=48
+              ->  Bitmap Heap Scan on payments_project  (cost=4.30..11.62 rows=2 width=8) (actual time=0.014..0.015 rows=2.00 loops=1)
+                    Recheck Cond: (merchant_id = 99)
+                    Heap Blocks: exact=2
+                    Buffers: shared hit=4
+                    ->  Bitmap Index Scan on payments_project_merchant_id_07f72254  (cost=0.00..4.30 rows=2 width=0) (actual time=0.007..0.007 rows=2.00 loops=1)
+                          Index Cond: (merchant_id = 99)
+                          Index Searches: 1
+                          Buffers: shared hit=2
+              ->  Bitmap Heap Scan on payments_invoice  (cost=4.45..79.73 rows=20 width=31) (actual time=0.010..0.027 rows=20.00 loops=2)
+                    Recheck Cond: (project_id = payments_project.id)
+                    Filter: ((updated_at >= '2026-08-20 05:00:00+05'::timestamp with time zone) AND (updated_at <= '2026-10-20 05:00:00+05'::timestamp with time zone))
+                    Heap Blocks: exact=40
+                    Buffers: shared hit=44
+                    ->  Bitmap Index Scan on payments_invoice_project_id_6b83df2c  (cost=0.00..4.45 rows=20 width=0) (actual time=0.004..0.004 rows=20.00 loops=2)
+                          Index Cond: (project_id = payments_project.id)
+                          Index Searches: 2
+                          Buffers: shared hit=4
+  SubPlan 1
+    ->  Limit  (cost=0.29..4.31 rows=1 width=10) (actual time=0.002..0.002 rows=0.00 loops=40)
+          Buffers: shared hit=80
+          ->  Index Only Scan using exchangerate_base_target_currency_key on payments_exchangerate "U0"  (cost=0.29..4.31 rows=1 width=10) (actual time=0.002..0.002 rows=0.00 loops=40)
+                Index Cond: ((base_currency = (payments_invoice.currency)::text) AND (target_currency = 'USD'::text))
+                Heap Fetches: 0
+                Index Searches: 40
+                Buffers: shared hit=80
+Planning:
+  Buffers: shared hit=14
+Planning Time: 0.367 ms
+Execution Time: 0.318 ms
