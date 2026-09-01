@@ -12,6 +12,7 @@ from payments.models import (
     LedgerType,
     Payment,
 )
+from payments.models.notification import Notification
 from payments.schemas.payment import Payment as PaymentSchema
 from payments.services.currency import exchange
 from payments.services.invoice import paied_amount
@@ -91,7 +92,10 @@ def process_payment(payment: PaymentSchema):
         elif amount_after_payment == invoice.amount:
             invoice.set_status(InvoiceStatus.PAID)
 
-        fee_ledger = Ledger(
+        Notification.objects.create(
+            invoice=invoice,
+        )
+        Ledger.objects.create(
             merchant=invoice.project.merchant,
             project=invoice.project,
             invoice=invoice,
@@ -100,7 +104,6 @@ def process_payment(payment: PaymentSchema):
             exchange_rate=1,
             type=LedgerType.FEE,
         )
-        fee_ledger.save()
     else:
         invoice.set_status(InvoiceStatus.UNDERPAID)
 
