@@ -22,7 +22,7 @@ def payments(request: HttpRequest, payment: Payment):
                 message='Request is missing the required \'x-signature\' header',
             ).model_dump(),
         )
-
+    # TODO: Проверка подписи
     process_payment(payment)
 
     return HttpResponse(status=204)

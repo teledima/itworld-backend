@@ -37,7 +37,11 @@ def get_report(id: int, params: MerchantReportRequest):
 
     invoice_cte = (
         Invoice.objects
-            .filter(project__merchant=id)
+            .filter(
+                project__merchant=id,
+                updated_at__gte=params.date_from,
+                updated_at__lte=params.date_to,
+            )
             .values(group=group_by__invoice)
             .annotate(
                 payed_cnt=Sum(
@@ -68,7 +72,11 @@ def get_report(id: int, params: MerchantReportRequest):
 
     ledger_cte = (
         Ledger.objects
-            .filter(merchant=id)
+            .filter(
+                merchant=id,
+                dt__gte=params.date_from,
+                dt__lte=params.date_to,
+            )
             .values(group=group_by__ledger)
             .annotate(
                 fund_amount=Sum(
